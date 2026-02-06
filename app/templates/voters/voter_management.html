@@ -1,0 +1,1184 @@
+<!-- templates/voters/voter_management.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ভোটার ব্যবস্থাপনা সিস্টেম</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    {% load static %}
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            500: '#0ea5e9',
+                            600: '#0284c7',
+                            700: '#0369a1',
+                        },
+                        secondary: {
+                            500: '#8b5cf6',
+                            600: '#7c3aed',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Hind Siliguri', sans-serif;
+        }
+        
+        .table-row-hover:hover {
+            background-color: #f8fafc;
+            transform: translateY(-1px);
+            transition: all 0.2s ease;
+        }
+        
+        .modal {
+            transition: opacity 0.3s ease-in-out;
+        }
+        
+        .pagination-active {
+            background: linear-gradient(135deg, #0ea5e9 0%, #8b5cf6 100%);
+            color: white;
+        }
+        
+        .notification {
+            animation: slideIn 0.3s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .card-shadow {
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        
+        .filter-card {
+            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+            border: 1px solid rgba(226, 232, 240, 0.8);
+        }
+        
+        /* Enhanced table styles */
+        .enhanced-table th {
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            font-weight: 600;
+            letter-spacing: 0.05em;
+        }
+        
+        .enhanced-table td {
+            border-bottom: 1px solid #f1f5f9;
+        }
+        
+        /* Button styles */
+        .btn-primary {
+            background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+            color: white;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(14, 165, 233, 0.2);
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+            color: white;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(139, 92, 246, 0.2);
+        }
+        
+        /* Footer styles */
+        .footer-gradient {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+        }
+        
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #0ea5e9 0%, #8b5cf6 100%);
+            border-radius: 4px;
+        }
+        
+        /* Loading animation */
+        .loading-spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #0ea5e9;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Mobile table scroll */
+        .mobile-table-container {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        /* Mobile action buttons */
+        .mobile-fab {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            box-shadow: 0 4px 20px rgba(14, 165, 233, 0.3);
+            z-index: 100;
+            border: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Header -->
+    <header class="gradient-bg text-white">
+        <div class="container mx-auto px-4 py-3">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="flex items-center space-x-3 mb-3 md:mb-0">
+                    <div class="bg-white/20 p-2 rounded-lg">
+                        <i class="fas fa-vote-yea text-2xl"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-xl md:text-2xl font-bold">ভোটার ব্যবস্থাপনা</h1>
+                        <p class="text-white/80 text-xs md:text-sm">দেশের বৃহত্তম ভোটার ডাটাবেস</p>
+                    </div>
+                </div>
+                
+                <nav class="flex space-x-4 md:space-x-6">
+                    <a href="/" class="flex items-center space-x-1 md:space-x-2 hover:text-white/90 transition">
+                        <i class="fas fa-home text-sm md:text-base"></i>
+                        <span class="hidden md:inline">হোম</span>
+                    </a>
+                    <a href="#" class="flex items-center space-x-1 md:space-x-2 hover:text-white/90 transition">
+                        <i class="fas fa-chart-bar text-sm md:text-base"></i>
+                        <span class="hidden md:inline">রিপোর্ট</span>
+                    </a>
+                    <a href="#" class="flex items-center space-x-1 md:space-x-2 hover:text-white/90 transition">
+                        <i class="fas fa-cog text-sm md:text-base"></i>
+                        <span class="hidden md:inline">সেটিংস</span>
+                    </a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-2 md:px-4 py-3 md:py-6">
+        <!-- Page Title and Add Button (Mobile Visible) -->
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 md:mb-6">
+            <div class="mb-3 md:mb-0">
+                <h1 class="text-xl md:text-2xl font-bold text-gray-800">ভোটার ব্যবস্থাপনা</h1>
+                <p class="text-gray-600 mt-1 text-sm md:text-base">সকল ভোটারের তথ্য দেখুন, খুঁজুন এবং পরিচালনা করুন</p>
+            </div>
+            <button id="addVoterBtn" class="btn-primary px-4 py-2 md:px-6 md:py-3 rounded-lg font-medium flex items-center space-x-2 w-full md:w-auto justify-center">
+                <i class="fas fa-user-plus"></i>
+                <span class="text-sm md:text-base">নতুন ভোটার যোগ করুন</span>
+            </button>
+        </div>
+
+        <!-- Filter Section - Visible on both mobile and desktop -->
+        <div class="filter-card rounded-xl p-3 md:p-4 mb-4 md:mb-6">
+            <!-- Quick Search - Always visible -->
+            <div class="mb-3 md:mb-4">
+                <div class="relative">
+                    <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                    <input type="text" id="quickSearch" placeholder="নাম, ভোটার আইডি, বা ঠিকানা অনুসন্ধান করুন..." 
+                           class="w-full pl-10 pr-4 py-2 md:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm md:text-base">
+                </div>
+            </div>
+            
+            <!-- Advanced Filter Toggle - Always visible -->
+            <div class="flex justify-between items-center mb-3 md:mb-0">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1 md:mb-2" for="itemsPerPage">প্রতি পৃষ্ঠায়</label>
+                    <select id="itemsPerPage" 
+                            class="px-3 py-1.5 md:px-4 md:py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm md:text-base">
+                        <option value="10">১০টি রেকর্ড</option>
+                        <option value="25" selected>২৫টি রেকর্ড</option>
+                        <option value="50">৫০টি রেকর্ড</option>
+                        <option value="100">১০০টি রেকর্ড</option>
+                    </select>
+                </div>
+                
+                <button id="advancedFilterToggle" class="btn-secondary px-3 py-1.5 md:px-4 md:py-3 rounded-lg font-medium flex items-center space-x-2 text-sm md:text-base">
+                    <i class="fas fa-sliders-h"></i>
+                    <span>অতিরিক্ত ফিল্টার</span>
+                </button>
+            </div>
+            
+            <!-- Advanced Filters (Collapsible) -->
+            <div id="advancedFilters" class="hidden mt-3 md:mt-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 md:grid-cols-4 p-3 md:p-4 bg-gray-50 rounded-lg">
+                    <div>
+                        <label class="block text-xs md:text-sm font-medium text-gray-700 mb-1 md:mb-2">ভোটার আইডি</label>
+                        <input type="text" id="searchVoterId" placeholder="ভোটার আইডি"
+                               class="w-full px-3 py-1.5 md:px-4 md:py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm md:text-base">
+                    </div>
+                    <div>
+                        <label class="block text-xs md:text-sm font-medium text-gray-700 mb-1 md:mb-2">পিতার নাম</label>
+                        <input type="text" id="searchFather" placeholder="পিতার নাম"
+                               class="w-full px-3 py-1.5 md:px-4 md:py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm md:text-base">
+                    </div>
+                    <div>
+                        <label class="block text-xs md:text-sm font-medium text-gray-700 mb-1 md:mb-2">মাতার নাম</label>
+                        <input type="text" id="searchMother" placeholder="মাতার নাম"
+                               class="w-full px-3 py-1.5 md:px-4 md:py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm md:text-base">
+                    </div>
+                    <div>
+                        <label class="block text-xs md:text-sm font-medium text-gray-700 mb-1 md:mb-2">জন্ম তারিখ</label>
+                        <input type="text" id="searchDob" placeholder="দিন/মাস/বছর"
+                               class="w-full px-3 py-1.5 md:px-4 md:py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm md:text-base">
+                    </div>
+                </div>
+                
+                <div class="flex flex-col sm:flex-row justify-between items-center mt-3 md:mt-4 space-y-3 sm:space-y-0">
+                    <div class="w-full sm:w-auto">
+                        <p class="text-xs md:text-sm text-gray-600 text-center sm:text-left">সম্পূর্ণ ফিল্টার অপশন দেখানো হচ্ছে</p>
+                    </div>
+                    
+                    <div class="flex space-x-2 w-full sm:w-auto">
+                        <button id="searchBtn" class="btn-primary px-4 py-2 rounded-lg font-medium flex items-center justify-center space-x-2 flex-1 sm:flex-none">
+                            <i class="fas fa-search"></i>
+                            <span class="text-sm md:text-base">খুঁজুন</span>
+                        </button>
+                        <button id="resetBtn" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-lg font-medium flex items-center justify-center space-x-2 flex-1 sm:flex-none transition">
+                            <i class="fas fa-redo"></i>
+                            <span class="text-sm md:text-base">রিসেট</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Active Filters Display (Mobile only) -->
+        <div id="mobileFilterChips" class="flex flex-wrap gap-2 mb-4 md:hidden">
+            <!-- Active filter chips will appear here -->
+        </div>
+
+        <!-- Voter Table -->
+        <div class="bg-white rounded-xl card-shadow overflow-hidden">
+            <div class="mobile-table-container">
+                <table class="min-w-full divide-y divide-gray-200 enhanced-table">
+                    <thead>
+                        <tr>
+                            <th class="px-3 py-2 md:px-4 md:py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">ক্রমিক</th>
+                            <th class="px-3 py-2 md:px-4 md:py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">নাম</th>
+                            <th class="px-3 py-2 md:px-4 md:py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">ভোটার আইডি</th>
+                            <th class="px-3 py-2 md:px-4 md:py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">পিতার নাম</th>
+                            <th class="px-3 py-2 md:px-4 md:py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">মাতার নাম</th>
+                            <th class="px-3 py-2 md:px-4 md:py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">জন্ম তারিখ</th>
+                            <th class="px-3 py-2 md:px-4 md:py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">কার্যক্রম</th>
+                        </tr>
+                    </thead>
+                    <tbody id="voterTableBody" class="divide-y divide-gray-200">
+                        <!-- Voter data will be loaded here -->
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Loading State -->
+            <div id="loadingIndicator" class="p-8 text-center">
+                <div class="loading-spinner mx-auto"></div>
+                <p class="mt-3 text-gray-600">ভোটার তথ্য লোড হচ্ছে...</p>
+            </div>
+            
+            <!-- Empty State -->
+            <div id="emptyState" class="hidden p-8 text-center">
+                <div class="inline-flex items-center justify-center w-16 h-16 bg-gray-100 rounded-full mb-4">
+                    <i class="fas fa-users text-gray-400 text-2xl"></i>
+                </div>
+                <h3 class="text-lg font-medium text-gray-700 mb-2">কোন ভোটার পাওয়া যায়নি</h3>
+                <p class="text-gray-500 mb-4">আপনার অনুসন্ধানের সাথে মিলছে এমন কোনো ভোটার নেই</p>
+                <button id="emptyStateReset" class="btn-primary px-4 py-2 rounded-lg">
+                    সব ফিল্টার রিসেট করুন
+                </button>
+            </div>
+        </div>
+
+        <!-- Pagination -->
+        <div class="mt-4 md:mt-6 flex flex-col sm:flex-row justify-between items-center">
+            <div id="paginationInfo" class="mb-3 md:mb-0 text-gray-600 text-xs md:text-sm text-center sm:text-left">
+                দেখানো হচ্ছে <span class="font-semibold" id="currentStart">0</span> থেকে <span class="font-semibold" id="currentEnd">0</span> পর্যন্ত, মোট <span class="font-semibold" id="totalItems">0</span> ভোটার
+            </div>
+            <div id="pagination" class="flex items-center space-x-1 md:space-x-2">
+                <!-- Pagination buttons will be generated here -->
+            </div>
+        </div>
+    </main>
+
+    <!-- Mobile FAB Button -->
+    <button id="mobileFab" class="mobile-fab md:hidden">
+        <i class="fas fa-plus"></i>
+    </button>
+
+    <!-- Footer -->
+    <footer class="footer-gradient text-white mt-8">
+        <div class="container mx-auto px-4 py-6 md:py-8">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
+                <div>
+                    <div class="flex items-center space-x-2 md:space-x-3 mb-3 md:mb-4">
+                        <div class="bg-white/10 p-2 rounded-lg">
+                            <i class="fas fa-vote-yea text-xl"></i>
+                        </div>
+                        <h3 class="text-lg md:text-xl font-bold">ভোটার ব্যবস্থাপনা</h3>
+                    </div>
+                    <p class="text-white/70 text-sm md:text-base">দেশের বৃহত্তম এবং সর্বাধুনিক ভোটার তথ্য ব্যবস্থাপনা সিস্টেম</p>
+                </div>
+                
+                <div>
+                    <h4 class="text-base md:text-lg font-semibold mb-2 md:mb-4">দ্রুত লিংক</h4>
+                    <ul class="space-y-1 md:space-y-2">
+                        <li><a href="#" class="text-white/70 hover:text-white transition text-sm md:text-base">হোম</a></li>
+                        <li><a href="#" class="text-white/70 hover:text-white transition text-sm md:text-base">ভোটার তালিকা</a></li>
+                        <li><a href="#" class="text-white/70 hover:text-white transition text-sm md:text-base">রিপোর্ট</a></li>
+                        <li><a href="#" class="text-white/70 hover:text-white transition text-sm md:text-base">সাহায্য</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="text-base md:text-lg font-semibold mb-2 md:mb-4">যোগাযোগ</h4>
+                    <ul class="space-y-1 md:space-y-2">
+                        <li class="flex items-center space-x-2">
+                            <i class="fas fa-phone text-white/70 text-sm md:text-base"></i>
+                            <span class="text-white/70 text-sm md:text-base">+৮৮০ ১৭XX-XXXXXX</span>
+                        </li>
+                        <li class="flex items-center space-x-2">
+                            <i class="fas fa-envelope text-white/70 text-sm md:text-base"></i>
+                            <span class="text-white/70 text-sm md:text-base">info@votermanagement.gov</span>
+                        </li>
+                        <li class="flex items-center space-x-2">
+                            <i class="fas fa-map-marker-alt text-white/70 text-sm md:text-base"></i>
+                            <span class="text-white/70 text-sm md:text-base">ঢাকা, বাংলাদেশ</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="border-t border-white/20 mt-6 md:mt-8 pt-4 md:pt-6 text-center">
+                <p class="text-white/60 text-xs md:text-sm">© ২০২৪ ভোটার ব্যবস্থাপনা সিস্টেম। সকল স্বত্ব সংরক্ষিত।</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Add/Edit Voter Modal -->
+    <div id="voterModal" class="fixed inset-0 z-50 overflow-y-auto hidden modal">
+        <div class="flex items-start sm:items-center justify-center min-h-screen pt-4 px-2 sm:px-4 pb-20 text-center sm:p-0">
+            <div class="fixed inset-0 transition-opacity" aria-hidden="true">
+                <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
+            </div>
+            <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle w-full max-w-3xl mx-2 sm:mx-4">
+                <form id="voterForm">
+                    <div class="bg-white px-4 sm:px-6 pt-5 pb-4">
+                        <div class="flex justify-between items-center mb-4 sm:mb-6">
+                            <h3 class="text-xl sm:text-2xl font-bold text-gray-900" id="modalTitle">নতুন ভোটার যোগ করুন</h3>
+                            <button type="button" id="closeModal" class="text-gray-400 hover:text-gray-500">
+                                <i class="fas fa-times text-lg sm:text-xl"></i>
+                            </button>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+                            <div>
+                                <label for="serial" class="block text-sm font-medium text-gray-700 mb-1">ক্রমিক নং *</label>
+                                <input type="text" id="serial" name="serial" required class="w-full px-3 py-2 sm:px-4 sm:py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm sm:text-base">
+                            </div>
+                            <div>
+                                <label for="name" class="block text-sm font-medium text-gray-700 mb-1">ভোটারের নাম *</label>
+                                <input type="text" id="name" name="name" required class="w-full px-3 py-2 sm:px-4 sm:py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm sm:text-base">
+                            </div>
+                            <div>
+                                <label for="voter_id" class="block text-sm font-medium text-gray-700 mb-1">ভোটার আইডি *</label>
+                                <input type="text" id="voter_id" name="voter_id" required class="w-full px-3 py-2 sm:px-4 sm:py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm sm:text-base">
+                            </div>
+                            <div>
+                                <label for="fathers_name" class="block text-sm font-medium text-gray-700 mb-1">পিতার নাম *</label>
+                                <input type="text" id="fathers_name" name="fathers_name" required class="w-full px-3 py-2 sm:px-4 sm:py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm sm:text-base">
+                            </div>
+                            <div>
+                                <label for="mothers_name" class="block text-sm font-medium text-gray-700 mb-1">মাতার নাম *</label>
+                                <input type="text" id="mothers_name" name="mothers_name" required class="w-full px-3 py-2 sm:px-4 sm:py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm sm:text-base">
+                            </div>
+                            <div>
+                                <label for="occupation" class="block text-sm font-medium text-gray-700 mb-1">পেশা</label>
+                                <input type="text" id="occupation" name="occupation" class="w-full px-3 py-2 sm:px-4 sm:py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm sm:text-base">
+                            </div>
+                            <div>
+                                <label for="dob" class="block text-sm font-medium text-gray-700 mb-1">জন্ম তারিখ</label>
+                                <input type="text" id="dob" name="dob" placeholder="দিন/মাস/বছর" class="w-full px-3 py-2 sm:px-4 sm:py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm sm:text-base">
+                            </div>
+                            <div>
+                                <label for="source_title" class="block text-sm font-medium text-gray-700 mb-1">তথ্যের উৎস</label>
+                                <input type="text" id="source_title" name="source_title" class="w-full px-3 py-2 sm:px-4 sm:py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm sm:text-base">
+                            </div>
+                            <div class="md:col-span-2">
+                                <label for="address" class="block text-sm font-medium text-gray-700 mb-1">ঠিকানা *</label>
+                                <textarea id="address" name="address" rows="3" required class="w-full px-3 py-2 sm:px-4 sm:py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm sm:text-base"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-gray-50 px-4 sm:px-6 py-4 flex flex-col sm:flex-row-reverse">
+                        <button type="submit" id="saveVoterBtn" class="w-full sm:w-auto mb-3 sm:mb-0 sm:ml-3 btn-primary px-4 sm:px-8 py-2.5 rounded-lg flex items-center justify-center transition duration-200 text-sm sm:text-base">
+                            <i class="fas fa-save mr-2"></i>
+                            সংরক্ষণ
+                        </button>
+                        <button type="button" id="cancelModal" class="w-full sm:w-auto bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-2.5 px-4 sm:px-8 rounded-lg flex items-center justify-center transition duration-200 text-sm sm:text-base">
+                            বাতিল
+                        </button>
+                        <input type="hidden" id="editId" name="editId" value="">
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div id="confirmModal" class="fixed inset-0 z-50 overflow-y-auto hidden modal">
+        <div class="flex items-start sm:items-center justify-center min-h-screen pt-4 px-2 sm:px-4 pb-20 text-center sm:p-0">
+            <div class="fixed inset-0 transition-opacity" aria-hidden="true">
+                <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
+            </div>
+            <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle w-full max-w-lg mx-2 sm:mx-4">
+                <div class="bg-white px-4 sm:px-6 pt-5 pb-4">
+                    <div class="sm:flex sm:items-start">
+                        <div class="mx-auto flex-shrink-0 flex items-center justify-center h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
+                            <i class="fas fa-exclamation-triangle text-red-600 text-lg sm:text-xl"></i>
+                        </div>
+                        <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                            <h3 class="text-lg leading-6 font-medium text-gray-900" id="confirmModalTitle">ভোটার মুছে ফেলুন</h3>
+                            <div class="mt-2">
+                                <p class="text-sm text-gray-500">আপনি কি নিশ্চিত যে আপনি এই ভোটারকে মুছে ফেলতে চান? এই কাজটি পূর্বাবস্থায় ফেরানো যাবে না।</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-gray-50 px-4 sm:px-6 py-4 flex flex-col sm:flex-row-reverse">
+                    <button type="button" id="confirmDeleteBtn" class="w-full sm:w-auto mb-3 sm:mb-0 sm:ml-3 bg-red-600 hover:bg-red-700 text-white font-medium py-2.5 px-4 sm:px-8 rounded-lg flex items-center justify-center transition duration-200 text-sm sm:text-base">
+                        <i class="fas fa-trash mr-2"></i>
+                        মুছে ফেলুন
+                    </button>
+                    <button type="button" id="cancelDeleteBtn" class="w-full sm:w-auto bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-2.5 px-4 sm:px-8 rounded-lg flex items-center justify-center transition duration-200 text-sm sm:text-base">
+                        বাতিল করুন
+                    </button>
+                    <input type="hidden" id="deleteId" value="">
+                </div>
+            </div>
+        </div>
+    </div>
+
+   <script>
+    // State management
+    let currentPage = 1;
+    let itemsPerPage = 25;
+    let totalPages = 1;
+    let currentSearch = {
+        search: '',           // Global search term
+        voter_id: '',
+        fathers_name: '',
+        mothers_name: '',
+        dob: ''
+    };
+
+    // Django CSRF token setup
+    const csrftoken = getCookie('csrftoken');
+
+    // DOM elements
+    const voterTableBody = document.getElementById('voterTableBody');
+    const loadingIndicator = document.getElementById('loadingIndicator');
+    const emptyState = document.getElementById('emptyState');
+    const pagination = document.getElementById('pagination');
+    const paginationInfo = document.getElementById('paginationInfo');
+    const voterModal = document.getElementById('voterModal');
+    const confirmModal = document.getElementById('confirmModal');
+    const voterForm = document.getElementById('voterForm');
+    const modalTitle = document.getElementById('modalTitle');
+    const editIdInput = document.getElementById('editId');
+    const deleteIdInput = document.getElementById('deleteId');
+    const filterSection = document.getElementById('filterSection');
+    const advancedFilters = document.getElementById('advancedFilters');
+    const advancedFilterToggle = document.getElementById('advancedFilterToggle');
+    const mobileFilterChips = document.getElementById('mobileFilterChips');
+    const mobileFab = document.getElementById('mobileFab');
+
+    // Initialize the application
+    document.addEventListener('DOMContentLoaded', function() {
+        loadVoters();
+        setupEventListeners();
+    });
+
+    // Load voters from Django backend
+    async function loadVoters() {
+        // Show loading state
+        loadingIndicator.classList.remove('hidden');
+        voterTableBody.innerHTML = '';
+        emptyState.classList.add('hidden');
+        
+        // Build query parameters - Use 'search' parameter for global search
+        const params = new URLSearchParams({
+            page: currentPage,
+            per_page: itemsPerPage,
+            search: currentSearch.search,          // Global search parameter
+            voter_id: currentSearch.voter_id,
+            fathers_name: currentSearch.fathers_name,
+            mothers_name: currentSearch.mothers_name,
+            dob: currentSearch.dob
+        });
+        
+        console.log('Loading voters with params:', Object.fromEntries(params));
+        
+        try {
+            const response = await fetch(`/api/voters/?${params}`);
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            const data = await response.json();
+            console.log('API response:', data);
+            
+            // Hide loading indicator
+            loadingIndicator.classList.add('hidden');
+            
+            // Render voters or show empty state
+            if (data.voters && data.voters.length > 0) {
+                renderVoters(data.voters);
+            } else {
+                emptyState.classList.remove('hidden');
+            }
+            
+            // Update pagination info
+            const start = (data.page - 1) * data.per_page + 1;
+            const end = Math.min(start + data.per_page - 1, data.total);
+            updatePaginationInfo(start, end, data.total);
+            
+            // Update total pages
+            totalPages = data.total_pages;
+            
+            // Render pagination
+            renderPagination();
+            
+            // Update mobile filter chips
+            updateMobileFilterChips();
+            
+        } catch (error) {
+            console.error('Error loading voters:', error);
+            loadingIndicator.classList.add('hidden');
+            emptyState.classList.remove('hidden');
+            showNotification('ভোটার তথ্য লোড করতে সমস্যা হয়েছে', 'error');
+        }
+    }
+
+    // Render voter table rows
+    function renderVoters(voterList) {
+        voterTableBody.innerHTML = '';
+        
+        voterList.forEach(voter => {
+            const row = document.createElement('tr');
+            row.className = 'table-row-hover';
+            row.innerHTML = `
+                <td class="px-3 py-2 md:px-4 md:py-3 whitespace-nowrap text-sm font-medium text-gray-900">${voter.serial || ''}</td>
+                <td class="px-3 py-2 md:px-4 md:py-3 whitespace-nowrap text-sm text-gray-800 font-medium">${voter.name || ''}</td>
+                <td class="px-3 py-2 md:px-4 md:py-3 whitespace-nowrap text-sm text-gray-800">
+                    <span class="inline-flex items-center px-2 py-0.5 md:px-2.5 md:py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                        ${voter.voter_id || ''}
+                    </span>
+                </td>
+                <td class="px-3 py-2 md:px-4 md:py-3 whitespace-nowrap text-sm text-gray-800">${voter.fathers_name || ''}</td>
+                <td class="px-3 py-2 md:px-4 md:py-3 whitespace-nowrap text-sm text-gray-800">${voter.mothers_name || ''}</td>
+                <td class="px-3 py-2 md:px-4 md:py-3 whitespace-nowrap text-sm text-gray-800">${voter.dob || 'নির্ধারিত নয়'}</td>
+                <td class="px-3 py-2 md:px-4 md:py-3 whitespace-nowrap text-sm font-medium">
+                    <div class="flex space-x-1 md:space-x-2">
+                        <button class="edit-btn text-primary-600 hover:text-primary-900 px-2 py-1 md:px-3 md:py-1.5 rounded-lg bg-primary-50 hover:bg-primary-100 transition" data-id="${voter.id}">
+                            <i class="fas fa-edit md:mr-1.5 text-xs md:text-sm"></i>
+                            <span class="hidden md:inline">পরিবর্তন</span>
+                        </button>
+                        <button class="delete-btn text-red-600 hover:text-red-900 px-2 py-1 md:px-3 md:py-1.5 rounded-lg bg-red-50 hover:bg-red-100 transition" data-id="${voter.id}">
+                            <i class="fas fa-trash md:mr-1.5 text-xs md:text-sm"></i>
+                            <span class="hidden md:inline">মুছুন</span>
+                        </button>
+                    </div>
+                </td>
+            `;
+            voterTableBody.appendChild(row);
+        });
+        
+        // Attach event listeners to edit and delete buttons
+        document.querySelectorAll('.edit-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const id = this.getAttribute('data-id');
+                editVoter(id);
+            });
+        });
+        
+        document.querySelectorAll('.delete-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const id = this.getAttribute('data-id');
+                showDeleteConfirmation(id);
+            });
+        });
+    }
+
+    // Update pagination information
+    function updatePaginationInfo(start, end, total) {
+        document.getElementById('currentStart').textContent = start;
+        document.getElementById('currentEnd').textContent = end;
+        document.getElementById('totalItems').textContent = total;
+    }
+
+    // Render pagination buttons
+    function renderPagination() {
+        pagination.innerHTML = '';
+        
+        // Previous button
+        const prevButton = document.createElement('button');
+        prevButton.innerHTML = '<i class="fas fa-chevron-left"></i>';
+        prevButton.className = `px-2 py-1 md:px-3 md:py-2 rounded-lg text-xs md:text-sm ${currentPage === 1 ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300 hover:border-primary-300'}`;
+        prevButton.disabled = currentPage === 1;
+        prevButton.addEventListener('click', () => {
+            if (currentPage > 1) {
+                currentPage--;
+                loadVoters();
+            }
+        });
+        pagination.appendChild(prevButton);
+        
+        // Page buttons
+        const maxVisibleButtons = window.innerWidth < 640 ? 3 : 5;
+        let startPage = Math.max(1, currentPage - Math.floor(maxVisibleButtons / 2));
+        let endPage = Math.min(totalPages, startPage + maxVisibleButtons - 1);
+        
+        if (endPage - startPage + 1 < maxVisibleButtons) {
+            startPage = Math.max(1, endPage - maxVisibleButtons + 1);
+        }
+        
+        // First page button (if needed)
+        if (startPage > 1) {
+            const firstButton = document.createElement('button');
+            firstButton.textContent = '1';
+            firstButton.className = 'px-2 py-1 md:px-3 md:py-2 bg-white text-gray-700 hover:bg-gray-50 border border-gray-300 hover:border-primary-300 rounded-lg text-xs md:text-sm';
+            firstButton.addEventListener('click', () => {
+                currentPage = 1;
+                loadVoters();
+            });
+            pagination.appendChild(firstButton);
+            
+            if (startPage > 2) {
+                const ellipsis = document.createElement('span');
+                ellipsis.className = 'px-1 py-1 md:px-2 md:py-2 text-gray-400 text-xs';
+                ellipsis.textContent = '...';
+                pagination.appendChild(ellipsis);
+            }
+        }
+        
+        for (let i = startPage; i <= endPage; i++) {
+            const pageButton = document.createElement('button');
+            pageButton.textContent = i;
+            pageButton.className = `px-3 py-1 md:px-4 md:py-2 rounded-lg text-xs md:text-sm ${i === currentPage ? 'pagination-active' : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300 hover:border-primary-300'}`;
+            pageButton.addEventListener('click', () => {
+                currentPage = i;
+                loadVoters();
+            });
+            pagination.appendChild(pageButton);
+        }
+        
+        // Last page button (if needed)
+        if (endPage < totalPages) {
+            if (endPage < totalPages - 1) {
+                const ellipsis = document.createElement('span');
+                ellipsis.className = 'px-1 py-1 md:px-2 md:py-2 text-gray-400 text-xs';
+                ellipsis.textContent = '...';
+                pagination.appendChild(ellipsis);
+            }
+            
+            const lastButton = document.createElement('button');
+            lastButton.textContent = totalPages;
+            lastButton.className = 'px-2 py-1 md:px-3 md:py-2 bg-white text-gray-700 hover:bg-gray-50 border border-gray-300 hover:border-primary-300 rounded-lg text-xs md:text-sm';
+            lastButton.addEventListener('click', () => {
+                currentPage = totalPages;
+                loadVoters();
+            });
+            pagination.appendChild(lastButton);
+        }
+        
+        // Next button
+        const nextButton = document.createElement('button');
+        nextButton.innerHTML = '<i class="fas fa-chevron-right"></i>';
+        nextButton.className = `px-2 py-1 md:px-3 md:py-2 rounded-lg text-xs md:text-sm ${currentPage === totalPages ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300 hover:border-primary-300'}`;
+        nextButton.disabled = currentPage === totalPages;
+        nextButton.addEventListener('click', () => {
+            if (currentPage < totalPages) {
+                currentPage++;
+                loadVoters();
+            }
+        });
+        pagination.appendChild(nextButton);
+    }
+
+    // Edit voter
+    async function editVoter(id) {
+        try {
+            const response = await fetch(`/api/voters/${id}/`);
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                const voter = data.voter;
+                
+                // Populate form
+                document.getElementById('serial').value = voter.serial || '';
+                document.getElementById('name').value = voter.name || '';
+                document.getElementById('voter_id').value = voter.voter_id || '';
+                document.getElementById('fathers_name').value = voter.fathers_name || '';
+                document.getElementById('mothers_name').value = voter.mothers_name || '';
+                document.getElementById('occupation').value = voter.occupation || '';
+                document.getElementById('dob').value = voter.dob || '';
+                document.getElementById('address').value = voter.address || '';
+                document.getElementById('source_title').value = voter.source_title || '';
+                
+                // Set edit mode
+                editIdInput.value = id;
+                modalTitle.textContent = 'ভোটার পরিবর্তন করুন';
+                
+                // Show modal
+                voterModal.classList.remove('hidden');
+                
+            } else {
+                showNotification(data.message || 'ভোটার তথ্য পাওয়া যায়নি', 'error');
+            }
+        } catch (error) {
+            console.error('Error fetching voter:', error);
+            showNotification('ভোটার তথ্য লোড করতে সমস্যা হয়েছে', 'error');
+        }
+    }
+
+    // Show delete confirmation
+    function showDeleteConfirmation(id) {
+        deleteIdInput.value = id;
+        confirmModal.classList.remove('hidden');
+    }
+
+    // Update mobile filter chips
+    function updateMobileFilterChips() {
+        mobileFilterChips.innerHTML = '';
+        
+        const filters = [
+            { label: 'সার্চ', value: currentSearch.search, type: 'search' },
+            { label: 'ভোটার আইডি', value: currentSearch.voter_id, type: 'voter_id' },
+            { label: 'পিতার নাম', value: currentSearch.fathers_name, type: 'fathers_name' },
+            { label: 'মাতার নাম', value: currentSearch.mothers_name, type: 'mothers_name' },
+            { label: 'জন্ম তারিখ', value: currentSearch.dob, type: 'dob' }
+        ];
+        
+        filters.forEach(filter => {
+            if (filter.value && filter.value.trim()) {
+                const chip = document.createElement('div');
+                chip.className = 'inline-flex items-center px-3 py-1 bg-primary-100 text-primary-800 rounded-full text-xs';
+                chip.innerHTML = `
+                    ${filter.label}: ${filter.value}
+                    <button type="button" onclick="removeFilter('${filter.type}')" class="ml-2 hover:text-primary-900">
+                        <i class="fas fa-times text-xs"></i>
+                    </button>
+                `;
+                mobileFilterChips.appendChild(chip);
+            }
+        });
+    }
+    
+    function removeFilter(type) {
+        currentSearch[type] = '';
+        
+        // Clear corresponding input fields
+        if (type === 'search') {
+            document.getElementById('quickSearch').value = '';
+        }
+        if (type === 'voter_id') {
+            document.getElementById('searchVoterId').value = '';
+        }
+        if (type === 'fathers_name') document.getElementById('searchFather').value = '';
+        if (type === 'mothers_name') document.getElementById('searchMother').value = '';
+        if (type === 'dob') {
+            document.getElementById('searchDob').value = '';
+        }
+        
+        updateMobileFilterChips();
+        currentPage = 1;
+        loadVoters();
+    }
+
+    // Helper function to reset all filters
+    function resetAllFilters() {
+        // Reset desktop filters
+        document.getElementById('quickSearch').value = '';
+        document.getElementById('searchVoterId').value = '';
+        document.getElementById('searchFather').value = '';
+        document.getElementById('searchMother').value = '';
+        document.getElementById('searchDob').value = '';
+        
+        // Reset state
+        currentSearch = { search: '', voter_id: '', fathers_name: '', mothers_name: '', dob: '' };
+        currentPage = 1;
+        
+        // Update UI
+        updateMobileFilterChips();
+        loadVoters();
+    }
+
+    // Setup event listeners
+    function setupEventListeners() {
+        // Mobile FAB button
+        mobileFab.addEventListener('click', function() {
+            openAddVoterModal();
+        });
+        
+        // Quick search (desktop and mobile) - Global search
+        let quickSearchTimeout;
+        document.getElementById('quickSearch').addEventListener('input', function() {
+            clearTimeout(quickSearchTimeout);
+            quickSearchTimeout = setTimeout(() => {
+                currentSearch.search = this.value;  // Global search
+                currentPage = 1;
+                updateMobileFilterChips();
+                loadVoters();
+            }, 300);
+        });
+        
+        // Advanced filter toggle
+        advancedFilterToggle.addEventListener('click', function() {
+            advancedFilters.classList.toggle('hidden');
+            const icon = this.querySelector('i');
+            if (advancedFilters.classList.contains('hidden')) {
+                icon.className = 'fas fa-sliders-h';
+                this.classList.remove('bg-gray-800');
+                this.classList.add('btn-secondary');
+            } else {
+                icon.className = 'fas fa-times';
+                this.classList.remove('btn-secondary');
+                this.classList.add('bg-gray-800');
+            }
+        });
+        
+        // Search button (for advanced filters)
+        document.getElementById('searchBtn').addEventListener('click', function() {
+            // Get advanced filter values
+            currentSearch.voter_id = document.getElementById('searchVoterId').value;
+            currentSearch.fathers_name = document.getElementById('searchFather').value;
+            currentSearch.mothers_name = document.getElementById('searchMother').value;
+            currentSearch.dob = document.getElementById('searchDob').value;
+            currentPage = 1;
+            
+            updateMobileFilterChips();
+            loadVoters();
+        });
+        
+        // Reset button
+        document.getElementById('resetBtn').addEventListener('click', function() {
+            resetAllFilters();
+        });
+        
+        // Items per page change
+        document.getElementById('itemsPerPage').addEventListener('change', function() {
+            itemsPerPage = parseInt(this.value);
+            currentPage = 1;
+            loadVoters();
+        });
+        
+        // Add voter button (desktop)
+        document.getElementById('addVoterBtn').addEventListener('click', function() {
+            openAddVoterModal();
+        });
+        
+        // Empty state reset
+        document.getElementById('emptyStateReset').addEventListener('click', function() {
+            resetAllFilters();
+        });
+        
+        // Close modal buttons
+        document.getElementById('closeModal').addEventListener('click', function() {
+            voterModal.classList.add('hidden');
+        });
+        
+        document.getElementById('cancelModal').addEventListener('click', function() {
+            voterModal.classList.add('hidden');
+        });
+        
+        // Close confirm modal buttons
+        document.getElementById('cancelDeleteBtn').addEventListener('click', function() {
+            confirmModal.classList.add('hidden');
+        });
+        
+        // Voter form submission
+        voterForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const saveBtn = document.getElementById('saveVoterBtn');
+            const originalText = saveBtn.innerHTML;
+            
+            // Show loading state
+            saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>সংরক্ষণ হচ্ছে...';
+            saveBtn.disabled = true;
+            
+            const formData = new FormData(this);
+            const voterData = {
+                serial: formData.get('serial'),
+                name: formData.get('name'),
+                voter_id: formData.get('voter_id'),
+                fathers_name: formData.get('fathers_name'),
+                mothers_name: formData.get('mothers_name'),
+                occupation: formData.get('occupation'),
+                dob: formData.get('dob'),
+                address: formData.get('address'),
+                source_title: formData.get('source_title')
+            };
+            
+            const editId = formData.get('editId');
+            
+            try {
+                let url, method;
+                
+                if (editId) {
+                    // Update existing voter
+                    url = `/api/voters/${editId}/update/`;
+                    method = 'POST';
+                } else {
+                    // Add new voter
+                    url = '/api/voters/create/';
+                    method = 'POST';
+                }
+                
+                const response = await fetch(url, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrftoken
+                    },
+                    body: JSON.stringify(voterData)
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Close modal and reload
+                    voterModal.classList.add('hidden');
+                    loadVoters();
+                    
+                    // Show success message
+                    showNotification(data.message, 'success');
+                } else {
+                    showNotification(data.message || 'সংরক্ষণ ব্যর্থ হয়েছে', 'error');
+                }
+            } catch (error) {
+                console.error('Error saving voter:', error);
+                showNotification('ভোটার সংরক্ষণ করতে সমস্যা হয়েছে', 'error');
+            } finally {
+                // Reset button state
+                saveBtn.innerHTML = originalText;
+                saveBtn.disabled = false;
+            }
+        });
+        
+        // Confirm delete
+        document.getElementById('confirmDeleteBtn').addEventListener('click', async function() {
+            const id = deleteIdInput.value;
+            const deleteBtn = this;
+            const originalText = deleteBtn.innerHTML;
+            
+            // Show loading state
+            deleteBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>মুছে ফেলানো হচ্ছে...';
+            deleteBtn.disabled = true;
+            
+            try {
+                const response = await fetch(`/api/voters/${id}/delete/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrftoken
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Close modal and reload
+                    confirmModal.classList.add('hidden');
+                    loadVoters();
+                    
+                    // Show success message
+                    showNotification(data.message, 'success');
+                } else {
+                    showNotification(data.message || 'মুছে ফেলা ব্যর্থ হয়েছে', 'error');
+                }
+            } catch (error) {
+                console.error('Error deleting voter:', error);
+                showNotification('ভোটার মুছে ফেলতে সমস্যা হয়েছে', 'error');
+            } finally {
+                // Reset button state
+                deleteBtn.innerHTML = originalText;
+                deleteBtn.disabled = false;
+            }
+        });
+        
+        // Close modals when clicking outside
+        window.addEventListener('click', function(e) {
+            if (e.target === voterModal) {
+                voterModal.classList.add('hidden');
+            }
+            if (e.target === confirmModal) {
+                confirmModal.classList.add('hidden');
+            }
+        });
+        
+        // Enable Enter key to search in all fields
+        document.querySelectorAll('#quickSearch, #searchVoterId, #searchFather, #searchMother, #searchDob').forEach(input => {
+            input.addEventListener('keyup', function(e) {
+                if (e.key === 'Enter') {
+                    if (this.id === 'quickSearch') {
+                        currentSearch.search = this.value;
+                    } else if (this.id === 'searchVoterId') {
+                        currentSearch.voter_id = this.value;
+                    } else if (this.id === 'searchFather') {
+                        currentSearch.fathers_name = this.value;
+                    } else if (this.id === 'searchMother') {
+                        currentSearch.mothers_name = this.value;
+                    } else if (this.id === 'searchDob') {
+                        currentSearch.dob = this.value;
+                    }
+                    currentPage = 1;
+                    updateMobileFilterChips();
+                    loadVoters();
+                }
+            });
+        });
+        
+        // Listen for escape key to close modals
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                if (!voterModal.classList.contains('hidden')) {
+                    voterModal.classList.add('hidden');
+                }
+                if (!confirmModal.classList.contains('hidden')) {
+                    confirmModal.classList.add('hidden');
+                }
+            }
+        });
+    }
+
+    // Open add voter modal
+    function openAddVoterModal() {
+        // Reset form
+        voterForm.reset();
+        editIdInput.value = '';
+        modalTitle.textContent = 'নতুন ভোটার যোগ করুন';
+        
+        // Show modal
+        voterModal.classList.remove('hidden');
+    }
+
+    // Show notification
+    function showNotification(message, type) {
+        // Remove existing notifications
+        const existingNotification = document.querySelector('.notification');
+        if (existingNotification) {
+            existingNotification.remove();
+        }
+        
+        // Create notification
+        const notification = document.createElement('div');
+        notification.className = `notification fixed top-4 right-4 px-4 py-3 rounded-lg shadow-lg z-50 transform transition-all duration-300 ${
+            type === 'success' ? 'bg-green-500 text-white' : 
+            type === 'error' ? 'bg-red-500 text-white' : 
+            'bg-blue-500 text-white'
+        }`;
+        notification.innerHTML = `
+            <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                    <i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'} mr-3"></i>
+                    <span>${message}</span>
+                </div>
+                <button class="ml-4 text-white/80 hover:text-white" onclick="this.parentElement.parentElement.remove()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        `;
+        
+        document.body.appendChild(notification);
+        
+        // Remove notification after 3 seconds
+        setTimeout(() => {
+            if (notification.parentElement) {
+                notification.style.opacity = '0';
+                notification.style.transform = 'translateX(100%)';
+                setTimeout(() => notification.remove(), 300);
+            }
+        }, 3000);
+    }
+
+    // Get CSRF token from cookies
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    // Export functions for inline onclick handlers
+    window.removeFilter = removeFilter;
+</script>
+</body>
+</html>
