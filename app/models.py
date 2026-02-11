@@ -123,4 +123,3 @@ class AllVoter(models.Model):
     def __str__(self):
         return f"{self.name} ({self.voter_id})"
 
-

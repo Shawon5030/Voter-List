@@ -3,7 +3,12 @@ from rest_framework.response import Response
 from rest_framework import status
 from django.db import IntegrityError
 from .serializers import AllVoterSerializer
-
+from django.shortcuts import render, redirect
+from django.contrib.auth import authenticate, login
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.forms import AuthenticationForm
+from django.core.exceptions import ValidationError
 
 class AllVoterBulkInsertAPI(APIView):
     """
@@ -44,8 +49,7 @@ class AllVoterBulkInsertAPI(APIView):
         
         
         
-        
-        # views.py
+     # views.py
 from django.shortcuts import render, get_object_or_404
 from django.http import JsonResponse
 from django.core.paginator import Paginator
@@ -55,10 +59,13 @@ from django.db.models import Q
 import json
 from .models import AllVoter
 
-@require_GET
+from django.contrib.auth.decorators import login_required
+
+@login_required
 def voter_list(request):
-    """Render the main voter management page"""
     return render(request, 'voters/voter_management.html')
+
+
 
 @require_GET
 def get_voters(request):
@@ -69,6 +76,9 @@ def get_voters(request):
     search_fathers_name = request.GET.get('fathers_name', '').strip()  # Changed from parents
     search_mothers_name = request.GET.get('mothers_name', '').strip()  # Changed from parents
     search_dob = request.GET.get('dob', '').strip()
+    
+    # Get sorting parameter
+    sort_by = request.GET.get('sort', 'serial_asc')
     
     # Start with all voters
     voters = AllVoter.objects.all()
@@ -99,6 +109,24 @@ def get_voters(request):
         
         if search_dob:
             voters = voters.filter(dob__icontains=search_dob)
+    
+    # Apply sorting - IMPORTANT: Add this section
+    if sort_by == 'serial_asc':
+        voters = voters.order_by('serial')
+    elif sort_by == 'serial_desc':
+        voters = voters.order_by('-serial')
+    # Add more sorting options if needed
+    elif sort_by == 'name_asc':
+        voters = voters.order_by('name')
+    elif sort_by == 'name_desc':
+        voters = voters.order_by('-name')
+    elif sort_by == 'voter_id_asc':
+        voters = voters.order_by('voter_id')
+    elif sort_by == 'voter_id_desc':
+        voters = voters.order_by('-voter_id')
+    else:
+        # Default sorting by serial ascending
+        voters = voters.order_by('serial')
     
     # Get pagination parameters
     page = int(request.GET.get('page', 1))
@@ -135,9 +163,10 @@ def get_voters(request):
         'total': paginator.count,
         'page': page,
         'per_page': per_page,
-        'total_pages': paginator.num_pages
+        'total_pages': paginator.num_pages,
+        'sort_order': sort_by  # Optional: send back the sort order
     })
-
+    
 @csrf_exempt
 @require_POST
 def create_voter(request):
@@ -145,8 +174,24 @@ def create_voter(request):
     try:
         data = json.loads(request.body)
         
+        # Handle serial conversion to integer
+        serial_value = data['serial']
+        # Remove any non-numeric characters and convert to integer
+        if isinstance(serial_value, str):
+            # Extract numbers from string
+            import re
+            numbers = re.findall(r'\d+', serial_value)
+            if numbers:
+                serial_value = int(numbers[0])
+            else:
+                serial_value = 0
+        elif isinstance(serial_value, (int, float)):
+            serial_value = int(serial_value)
+        else:
+            serial_value = 0
+        
         voter = AllVoter.objects.create(
-            serial=data['serial'],
+            serial=serial_value,
             name=data['name'],
             voter_id=data['voter_id'],
             fathers_name=data['fathers_name'],
@@ -176,7 +221,21 @@ def update_voter(request, voter_id):
         voter = get_object_or_404(AllVoter, id=voter_id)
         data = json.loads(request.body)
         
-        voter.serial = data['serial']
+        # Handle serial conversion to integer (same as create)
+        serial_value = data['serial']
+        if isinstance(serial_value, str):
+            import re
+            numbers = re.findall(r'\d+', serial_value)
+            if numbers:
+                serial_value = int(numbers[0])
+            else:
+                serial_value = 0
+        elif isinstance(serial_value, (int, float)):
+            serial_value = int(serial_value)
+        else:
+            serial_value = 0
+        
+        voter.serial = serial_value
         voter.name = data['name']
         voter.voter_id = data['voter_id']
         voter.fathers_name = data['fathers_name']
@@ -244,12 +303,8 @@ def get_voter_detail(request, voter_id):
         
         
         
-from django.shortcuts import render, redirect
-from django.contrib.auth import authenticate, login
-from django.contrib import messages
-from django.contrib.auth.decorators import login_required
-from django.contrib.auth.forms import AuthenticationForm
-from django.core.exceptions import ValidationError
+
+
 
 def custom_login(request):
     if request.user.is_authenticated:

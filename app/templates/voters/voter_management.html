@@ -1,4 +1,3 @@
-<!-- templates/voters/voter_management.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,6 +6,10 @@
     <title>ভোটার ব্যবস্থাপনা সিস্টেম</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Improved readable font -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
     {% load static %}
     <script>
         tailwind.config = {
@@ -24,16 +27,33 @@
                             500: '#8b5cf6',
                             600: '#7c3aed',
                         }
+                    },
+                    fontFamily: {
+                        'bangla': ['Noto Sans Bengali', 'sans-serif'],
                     }
                 }
             }
         }
     </script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&display=swap');
-        
         body {
-            font-family: 'Hind Siliguri', sans-serif;
+            font-family: 'Noto Sans Bengali', sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        
+        /* Enhanced readability */
+        .readable-text {
+            line-height: 1.6;
+            letter-spacing: 0.02em;
+        }
+        
+        .serial-clickable {
+            cursor: pointer;
+            transition: all 0.2s ease;
+            padding: 4px 8px;
+            border-radius: 4px;
+            display: inline-block;
         }
         
         .table-row-hover:hover {
@@ -71,7 +91,7 @@
         }
         
         .card-shadow {
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
         }
         
         .filter-card {
@@ -79,49 +99,49 @@
             border: 1px solid rgba(226, 232, 240, 0.8);
         }
         
-        /* Enhanced table styles */
         .enhanced-table th {
             background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
             font-weight: 600;
             letter-spacing: 0.05em;
+            white-space: nowrap;
         }
         
         .enhanced-table td {
             border-bottom: 1px solid #f1f5f9;
+            vertical-align: middle;
         }
         
-        /* Button styles */
         .btn-primary {
             background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
             color: white;
             transition: all 0.3s ease;
+            border: none;
         }
         
         .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(14, 165, 233, 0.2);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(14, 165, 233, 0.2);
         }
         
         .btn-secondary {
             background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
             color: white;
             transition: all 0.3s ease;
+            border: none;
         }
         
         .btn-secondary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(139, 92, 246, 0.2);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(139, 92, 246, 0.2);
         }
         
-        /* Footer styles */
         .footer-gradient {
             background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
         }
         
-        /* Custom scrollbar */
         ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
+            width: 6px;
+            height: 6px;
         }
         
         ::-webkit-scrollbar-track {
@@ -134,7 +154,6 @@
             border-radius: 4px;
         }
         
-        /* Loading animation */
         .loading-spinner {
             border: 3px solid #f3f3f3;
             border-top: 3px solid #0ea5e9;
@@ -149,19 +168,17 @@
             100% { transform: rotate(360deg); }
         }
         
-        /* Mobile table scroll */
         .mobile-table-container {
             overflow-x: auto;
             -webkit-overflow-scrolling: touch;
         }
         
-        /* Mobile action buttons */
         .mobile-fab {
             position: fixed;
             bottom: 20px;
             right: 20px;
-            width: 60px;
-            height: 60px;
+            width: 56px;
+            height: 56px;
             border-radius: 50%;
             background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
             color: white;
@@ -169,53 +186,250 @@
             align-items: center;
             justify-content: center;
             font-size: 24px;
-            box-shadow: 0 4px 20px rgba(14, 165, 233, 0.3);
+            box-shadow: 0 4px 12px rgba(14, 165, 233, 0.3);
             z-index: 100;
             border: none;
             cursor: pointer;
         }
+
+        /* Mobile optimization */
+        @media (max-width: 767px) {
+            .container {
+                max-width: 100%;
+                padding-left: 0.75rem;
+                padding-right: 0.75rem;
+            }
+            
+            .enhanced-table th,
+            .enhanced-table td {
+                padding: 0.5rem 0.375rem;
+                font-size: 0.8125rem;
+                white-space: nowrap;
+            }
+            
+            .enhanced-table th {
+                font-size: 0.75rem;
+                letter-spacing: 0.02em;
+            }
+            
+            .mobile-table-container {
+                margin: 0 -0.75rem;
+                padding: 0 0.75rem;
+                -webkit-overflow-scrolling: touch;
+                overflow-x: auto;
+            }
+            
+            .mobile-table-container table {
+                min-width: 640px;
+            }
+            
+            .filter-card {
+                padding: 0.75rem;
+            }
+            
+            .card-shadow {
+                border-radius: 0.5rem;
+            }
+            
+            .notification {
+                left: 0.5rem;
+                right: 0.5rem;
+                max-width: calc(100vw - 1rem);
+                top: 0.5rem;
+            }
+            
+            .mobile-fab {
+                bottom: max(20px, env(safe-area-inset-bottom));
+                right: max(20px, env(safe-area-inset-right));
+                width: 52px;
+                height: 52px;
+                font-size: 22px;
+            }
+            
+            /* Ensure touch targets are large enough */
+            .serial-clickable {
+                min-width: 40px;
+                min-height: 40px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            
+            .edit-btn, .delete-btn {
+                min-width: 44px;
+                min-height: 44px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+        }
+
+        @media (max-width: 639px) {
+            .btn-primary,
+            .btn-secondary,
+            button[type="button"]:not(.edit-btn):not(.delete-btn):not(.serial-clickable) {
+                min-height: 44px;
+                padding: 10px 16px;
+            }
+            
+            .filter-card > .flex.justify-between {
+                flex-wrap: wrap;
+                gap: 0.75rem;
+            }
+            
+            #advancedFilters .grid {
+                gap: 0.75rem;
+            }
+            
+            #pagination button,
+            #pagination span {
+                min-width: 36px;
+                min-height: 36px;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 0.875rem;
+            }
+            
+            /* Better table font sizing for mobile */
+            .enhanced-table td {
+                font-size: 0.875rem;
+            }
+            
+            .serial-clickable {
+                font-weight: 600;
+                font-size: 0.875rem;
+            }
+        }
+        
+        /* Improved modal for mobile */
+        @media (max-width: 640px) {
+            #voterModal .inline-block,
+            #confirmModal .inline-block {
+                width: 95%;
+                margin: 0.5rem auto;
+                max-height: 90vh;
+                overflow-y: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+        }
+        
+        /* Tablet optimization */
+        @media (min-width: 768px) and (max-width: 1023px) {
+            .container {
+                max-width: 100%;
+                padding-left: 1rem;
+                padding-right: 1rem;
+            }
+            
+            .enhanced-table th,
+            .enhanced-table td {
+                padding: 0.75rem;
+                font-size: 0.875rem;
+            }
+        }
+        
+        /* Serial number styling */
+        .serial-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%);
+            color: #0369a1;
+            font-weight: 700;
+            border-radius: 6px;
+            padding: 6px 12px;
+            border: 1px solid #bae6fd;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            user-select: none;
+            font-family: monospace;
+            font-size: 0.9rem;
+        }
+        
+        .serial-badge:hover {
+            background: linear-gradient(135deg, #bae6fd 0%, #7dd3fc 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(14, 165, 233, 0.2);
+        }
+        
+        .serial-badge:active {
+            transform: translateY(0);
+        }
+        
+        /* Form input styling for better readability */
+        input, select, textarea {
+            font-family: 'Noto Sans Bengali', sans-serif;
+            font-size: 1rem;
+        }
+        
+        /* Mobile chip filters */
+        .filter-chip {
+            display: inline-flex;
+            align-items: center;
+            padding: 6px 12px;
+            background: #e0f2fe;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            margin: 2px;
+            white-space: nowrap;
+        }
+        
+        /* Action buttons */
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        
+        .action-buttons button {
+            flex-shrink: 0;
+        }
+        
+        /* Sort indicator */
+        .sort-indicator {
+            margin-left: 4px;
+            font-size: 0.75rem;
+        }
     </style>
 </head>
-<body class="bg-gray-50">
+<body class="bg-gray-50 overflow-x-hidden readable-text">
     <!-- Header -->
-    <header class="gradient-bg text-white">
-        <div class="container mx-auto px-4 py-3">
-            <div class="flex flex-col md:flex-row justify-between items-center">
-                <div class="flex items-center space-x-3 mb-3 md:mb-0">
-                    <div class="bg-white/20 p-2 rounded-lg">
-                        <i class="fas fa-vote-yea text-2xl"></i>
+    <header class="gradient-bg text-white shadow-md">
+        <div class="container mx-auto px-4 sm:px-6 max-w-7xl">
+            <div class="flex flex-row justify-between items-center gap-4 py-4 sm:py-4 min-h-[60px]">
+                <a href="/" class="flex items-center gap-3 shrink-0 min-w-0">
+                    <div class="flex-shrink-0 w-10 h-10 sm:w-11 sm:h-11 flex items-center justify-center bg-white/20 rounded-lg">
+                        <i class="fas fa-vote-yea text-lg sm:text-xl"></i>
                     </div>
-                    <div>
-                        <h1 class="text-xl md:text-2xl font-bold">ভোটার ব্যবস্থাপনা</h1>
-                        <p class="text-white/80 text-xs md:text-sm">দেশের বৃহত্তম ভোটার ডাটাবেস</p>
+                    <div class="min-w-0">
+                        <h1 class="text-lg sm:text-xl md:text-2xl font-bold truncate">ভোটার ব্যবস্থাপনা</h1>
+                        <p class="text-white/80 text-xs sm:text-sm truncate">দেশের বৃহত্তম ভোটার ডাটাবেস</p>
                     </div>
-                </div>
-                
-                <nav class="flex space-x-4 md:space-x-6">
-                    <a href="/" class="flex items-center space-x-1 md:space-x-2 hover:text-white/90 transition">
-                        <i class="fas fa-home text-sm md:text-base"></i>
-                        <span class="hidden md:inline">হোম</span>
+                </a>
+                <nav class="flex items-center gap-2 sm:gap-4 shrink-0" aria-label="প্রধান নেভিগেশন">
+                    <a href="/" class="flex items-center gap-1.5 sm:gap-2 px-3 py-2 rounded-lg hover:bg-white/10 transition text-sm sm:text-base">
+                        <i class="fas fa-home"></i>
+                        <span class="hidden sm:inline">হোম</span>
                     </a>
-                    <a href="#" class="flex items-center space-x-1 md:space-x-2 hover:text-white/90 transition">
-                        <i class="fas fa-chart-bar text-sm md:text-base"></i>
-                        <span class="hidden md:inline">রিপোর্ট</span>
+                    <a href="#" class="flex items-center gap-1.5 sm:gap-2 px-3 py-2 rounded-lg hover:bg-white/10 transition text-sm sm:text-base">
+                        <i class="fas fa-chart-bar"></i>
+                        <span class="hidden sm:inline">রিপোর্ট</span>
                     </a>
-                    <a href="#" class="flex items-center space-x-1 md:space-x-2 hover:text-white/90 transition">
-                        <i class="fas fa-cog text-sm md:text-base"></i>
-                        <span class="hidden md:inline">সেটিংস</span>
+                    <a href="#" class="flex items-center gap-1.5 sm:gap-2 px-3 py-2 rounded-lg hover:bg-white/10 transition text-sm sm:text-base">
+                        <i class="fas fa-cog"></i>
+                        <span class="hidden sm:inline">সেটিংস</span>
                     </a>
                 </nav>
             </div>
         </div>
     </header>
 
-    <!-- Main Content -->
     <main class="container mx-auto px-2 md:px-4 py-3 md:py-6">
-        <!-- Page Title and Add Button (Mobile Visible) -->
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 md:mb-6">
             <div class="mb-3 md:mb-0">
                 <h1 class="text-xl md:text-2xl font-bold text-gray-800">ভোটার ব্যবস্থাপনা</h1>
-                <p class="text-gray-600 mt-1 text-sm md:text-base">সকল ভোটারের তথ্য দেখুন, খুঁজুন এবং পরিচালনা করুন</p>
+                <p class="text-gray-600 mt-1 text-sm md:text-base">সিরিয়াল নম্বর ক্লিক করে ভোটার সম্পাদনা করুন</p>
             </div>
             <button id="addVoterBtn" class="btn-primary px-4 py-2 md:px-6 md:py-3 rounded-lg font-medium flex items-center space-x-2 w-full md:w-auto justify-center">
                 <i class="fas fa-user-plus"></i>
@@ -223,9 +437,8 @@
             </button>
         </div>
 
-        <!-- Filter Section - Visible on both mobile and desktop -->
+        <!-- Filter section -->
         <div class="filter-card rounded-xl p-3 md:p-4 mb-4 md:mb-6">
-            <!-- Quick Search - Always visible -->
             <div class="mb-3 md:mb-4">
                 <div class="relative">
                     <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
@@ -234,7 +447,6 @@
                 </div>
             </div>
             
-            <!-- Advanced Filter Toggle - Always visible -->
             <div class="flex justify-between items-center mb-3 md:mb-0">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1 md:mb-2" for="itemsPerPage">প্রতি পৃষ্ঠায়</label>
@@ -253,7 +465,6 @@
                 </button>
             </div>
             
-            <!-- Advanced Filters (Collapsible) -->
             <div id="advancedFilters" class="hidden mt-3 md:mt-4">
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 md:grid-cols-4 p-3 md:p-4 bg-gray-50 rounded-lg">
                     <div>
@@ -297,18 +508,20 @@
             </div>
         </div>
 
-        <!-- Active Filters Display (Mobile only) -->
         <div id="mobileFilterChips" class="flex flex-wrap gap-2 mb-4 md:hidden">
-            <!-- Active filter chips will appear here -->
         </div>
 
-        <!-- Voter Table -->
         <div class="bg-white rounded-xl card-shadow overflow-hidden">
             <div class="mobile-table-container">
                 <table class="min-w-full divide-y divide-gray-200 enhanced-table">
                     <thead>
                         <tr>
-                            <th class="px-3 py-2 md:px-4 md:py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">ক্রমিক</th>
+                            <th class="px-3 py-2 md:px-4 md:py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider cursor-pointer hover:bg-gray-100" onclick="toggleSort('serial')">
+                                ক্রমিক 
+                                <span id="serialSortIcon" class="sort-indicator">
+                                    <i class="fas fa-sort"></i>
+                                </span>
+                            </th>
                             <th class="px-3 py-2 md:px-4 md:py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">নাম</th>
                             <th class="px-3 py-2 md:px-4 md:py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">ভোটার আইডি</th>
                             <th class="px-3 py-2 md:px-4 md:py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">পিতার নাম</th>
@@ -318,18 +531,15 @@
                         </tr>
                     </thead>
                     <tbody id="voterTableBody" class="divide-y divide-gray-200">
-                        <!-- Voter data will be loaded here -->
                     </tbody>
                 </table>
             </div>
             
-            <!-- Loading State -->
             <div id="loadingIndicator" class="p-8 text-center">
                 <div class="loading-spinner mx-auto"></div>
                 <p class="mt-3 text-gray-600">ভোটার তথ্য লোড হচ্ছে...</p>
             </div>
             
-            <!-- Empty State -->
             <div id="emptyState" class="hidden p-8 text-center">
                 <div class="inline-flex items-center justify-center w-16 h-16 bg-gray-100 rounded-full mb-4">
                     <i class="fas fa-users text-gray-400 text-2xl"></i>
@@ -342,18 +552,15 @@
             </div>
         </div>
 
-        <!-- Pagination -->
         <div class="mt-4 md:mt-6 flex flex-col sm:flex-row justify-between items-center">
             <div id="paginationInfo" class="mb-3 md:mb-0 text-gray-600 text-xs md:text-sm text-center sm:text-left">
                 দেখানো হচ্ছে <span class="font-semibold" id="currentStart">0</span> থেকে <span class="font-semibold" id="currentEnd">0</span> পর্যন্ত, মোট <span class="font-semibold" id="totalItems">0</span> ভোটার
             </div>
             <div id="pagination" class="flex items-center space-x-1 md:space-x-2">
-                <!-- Pagination buttons will be generated here -->
             </div>
         </div>
     </main>
 
-    <!-- Mobile FAB Button -->
     <button id="mobileFab" class="mobile-fab md:hidden">
         <i class="fas fa-plus"></i>
     </button>
@@ -407,13 +614,13 @@
         </div>
     </footer>
 
-    <!-- Add/Edit Voter Modal -->
+    <!-- Modals -->
     <div id="voterModal" class="fixed inset-0 z-50 overflow-y-auto hidden modal">
         <div class="flex items-start sm:items-center justify-center min-h-screen pt-4 px-2 sm:px-4 pb-20 text-center sm:p-0">
             <div class="fixed inset-0 transition-opacity" aria-hidden="true">
                 <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
             </div>
-            <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle w-full max-w-3xl mx-2 sm:mx-4">
+            <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle w-full max-w-3xl mx-2 sm:mx-4 max-h-[90vh] overflow-y-auto">
                 <form id="voterForm">
                     <div class="bg-white px-4 sm:px-6 pt-5 pb-4">
                         <div class="flex justify-between items-center mb-4 sm:mb-6">
@@ -477,13 +684,12 @@
         </div>
     </div>
 
-    <!-- Confirmation Modal -->
     <div id="confirmModal" class="fixed inset-0 z-50 overflow-y-auto hidden modal">
         <div class="flex items-start sm:items-center justify-center min-h-screen pt-4 px-2 sm:px-4 pb-20 text-center sm:p-0">
             <div class="fixed inset-0 transition-opacity" aria-hidden="true">
                 <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
             </div>
-            <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle w-full max-w-lg mx-2 sm:mx-4">
+            <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle w-full max-w-lg mx-2 sm:mx-4 max-h-[90vh] overflow-y-auto">
                 <div class="bg-white px-4 sm:px-6 pt-5 pb-4">
                     <div class="sm:flex sm:items-start">
                         <div class="mx-auto flex-shrink-0 flex items-center justify-center h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
@@ -512,22 +718,19 @@
     </div>
 
    <script>
-    // State management
     let currentPage = 1;
     let itemsPerPage = 25;
     let totalPages = 1;
     let currentSearch = {
-        search: '',           // Global search term
+        search: '',
         voter_id: '',
         fathers_name: '',
         mothers_name: '',
         dob: ''
     };
+    let sortOrder = 'serial_asc'; // Default sorting by serial ascending
 
-    // Django CSRF token setup
     const csrftoken = getCookie('csrftoken');
-
-    // DOM elements
     const voterTableBody = document.getElementById('voterTableBody');
     const loadingIndicator = document.getElementById('loadingIndicator');
     const emptyState = document.getElementById('emptyState');
@@ -539,34 +742,32 @@
     const modalTitle = document.getElementById('modalTitle');
     const editIdInput = document.getElementById('editId');
     const deleteIdInput = document.getElementById('deleteId');
-    const filterSection = document.getElementById('filterSection');
     const advancedFilters = document.getElementById('advancedFilters');
     const advancedFilterToggle = document.getElementById('advancedFilterToggle');
     const mobileFilterChips = document.getElementById('mobileFilterChips');
     const mobileFab = document.getElementById('mobileFab');
+    const serialSortIcon = document.getElementById('serialSortIcon');
 
-    // Initialize the application
     document.addEventListener('DOMContentLoaded', function() {
         loadVoters();
         setupEventListeners();
+        updateSortIcon();
     });
 
-    // Load voters from Django backend
     async function loadVoters() {
-        // Show loading state
         loadingIndicator.classList.remove('hidden');
         voterTableBody.innerHTML = '';
         emptyState.classList.add('hidden');
         
-        // Build query parameters - Use 'search' parameter for global search
         const params = new URLSearchParams({
             page: currentPage,
             per_page: itemsPerPage,
-            search: currentSearch.search,          // Global search parameter
+            search: currentSearch.search,
             voter_id: currentSearch.voter_id,
             fathers_name: currentSearch.fathers_name,
             mothers_name: currentSearch.mothers_name,
-            dob: currentSearch.dob
+            dob: currentSearch.dob,
+            sort: sortOrder
         });
         
         console.log('Loading voters with params:', Object.fromEntries(params));
@@ -581,28 +782,19 @@
             const data = await response.json();
             console.log('API response:', data);
             
-            // Hide loading indicator
             loadingIndicator.classList.add('hidden');
             
-            // Render voters or show empty state
             if (data.voters && data.voters.length > 0) {
                 renderVoters(data.voters);
             } else {
                 emptyState.classList.remove('hidden');
             }
             
-            // Update pagination info
             const start = (data.page - 1) * data.per_page + 1;
             const end = Math.min(start + data.per_page - 1, data.total);
             updatePaginationInfo(start, end, data.total);
-            
-            // Update total pages
             totalPages = data.total_pages;
-            
-            // Render pagination
             renderPagination();
-            
-            // Update mobile filter chips
             updateMobileFilterChips();
             
         } catch (error) {
@@ -613,15 +805,37 @@
         }
     }
 
-    // Render voter table rows
     function renderVoters(voterList) {
         voterTableBody.innerHTML = '';
+        
+        // Sort voters by serial number if not already sorted by backend
+        if (sortOrder.includes('serial')) {
+            voterList.sort((a, b) => {
+                // Convert serial to number for proper numeric sorting
+                const serialA = parseInt(a.serial || '0', 10);
+                const serialB = parseInt(b.serial || '0', 10);
+                
+                if (sortOrder === 'serial_asc') {
+                    return serialA - serialB;
+                } else {
+                    return serialB - serialA;
+                }
+            });
+        }
         
         voterList.forEach(voter => {
             const row = document.createElement('tr');
             row.className = 'table-row-hover';
+            
+            // Format serial to always show with leading zeros
+            const formattedSerial = voter.serial ? String(voter.serial).padStart(4, '0') : '0000';
+            
             row.innerHTML = `
-                <td class="px-3 py-2 md:px-4 md:py-3 whitespace-nowrap text-sm font-medium text-gray-900">${voter.serial || ''}</td>
+                <td class="px-3 py-2 md:px-4 md:py-3 whitespace-nowrap">
+                    <div class="serial-badge" onclick="editVoterBySerial('${formattedSerial}')" title="এডিট করতে ক্লিক করুন">
+                        ${formattedSerial}
+                    </div>
+                </td>
                 <td class="px-3 py-2 md:px-4 md:py-3 whitespace-nowrap text-sm text-gray-800 font-medium">${voter.name || ''}</td>
                 <td class="px-3 py-2 md:px-4 md:py-3 whitespace-nowrap text-sm text-gray-800">
                     <span class="inline-flex items-center px-2 py-0.5 md:px-2.5 md:py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
@@ -631,8 +845,8 @@
                 <td class="px-3 py-2 md:px-4 md:py-3 whitespace-nowrap text-sm text-gray-800">${voter.fathers_name || ''}</td>
                 <td class="px-3 py-2 md:px-4 md:py-3 whitespace-nowrap text-sm text-gray-800">${voter.mothers_name || ''}</td>
                 <td class="px-3 py-2 md:px-4 md:py-3 whitespace-nowrap text-sm text-gray-800">${voter.dob || 'নির্ধারিত নয়'}</td>
-                <td class="px-3 py-2 md:px-4 md:py-3 whitespace-nowrap text-sm font-medium">
-                    <div class="flex space-x-1 md:space-x-2">
+                <td class="px-3 py-2 md:px-4 md:py-3 whitespace-nowrap">
+                    <div class="action-buttons">
                         <button class="edit-btn text-primary-600 hover:text-primary-900 px-2 py-1 md:px-3 md:py-1.5 rounded-lg bg-primary-50 hover:bg-primary-100 transition" data-id="${voter.id}">
                             <i class="fas fa-edit md:mr-1.5 text-xs md:text-sm"></i>
                             <span class="hidden md:inline">পরিবর্তন</span>
@@ -647,7 +861,7 @@
             voterTableBody.appendChild(row);
         });
         
-        // Attach event listeners to edit and delete buttons
+        // Add event listeners for edit and delete buttons
         document.querySelectorAll('.edit-btn').forEach(btn => {
             btn.addEventListener('click', function() {
                 const id = this.getAttribute('data-id');
@@ -663,18 +877,84 @@
         });
     }
 
-    // Update pagination information
+    // Edit voter by serial number (improved version)
+    async function editVoterBySerial(serial) {
+        if (!serial || serial.trim() === '') {
+            showNotification('সিরিয়াল নম্বর প্রদান করুন', 'error');
+            return;
+        }
+        
+        try {
+            // Remove leading zeros for the search
+            const serialNumber = parseInt(serial, 10);
+            console.log('Searching for serial:', serialNumber);
+            
+            // Search for voter by serial number
+            const params = new URLSearchParams({
+                per_page: 100 // Search more records to find the serial
+            });
+            
+            const response = await fetch(`/api/voters/?${params}`);
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            const data = await response.json();
+            
+            if (data.voters && data.voters.length > 0) {
+                // Find voter by serial (exact match)
+                const voter = data.voters.find(v => {
+                    const voterSerial = parseInt(v.serial || '0', 10);
+                    return voterSerial === serialNumber;
+                });
+                
+                if (voter) {
+                    console.log('Found voter:', voter);
+                    editVoter(voter.id);
+                } else {
+                    console.log('Voter not found. Available serials:', data.voters.map(v => v.serial));
+                    showNotification('সিরিয়াল নম্বর দিয়ে ভোটার পাওয়া যায়নি', 'error');
+                }
+            } else {
+                showNotification('কোন ভোটার পাওয়া যায়নি', 'error');
+            }
+        } catch (error) {
+            console.error('Error finding voter by serial:', error);
+            showNotification('ভোটার খুঁজে পেতে সমস্যা হয়েছে', 'error');
+        }
+    }
+
+    // Toggle sort order
+    function toggleSort(field) {
+        if (sortOrder === `${field}_asc`) {
+            sortOrder = `${field}_desc`;
+        } else {
+            sortOrder = `${field}_asc`;
+        }
+        
+        updateSortIcon();
+        loadVoters();
+    }
+    
+    function updateSortIcon() {
+        if (sortOrder === 'serial_asc') {
+            serialSortIcon.innerHTML = '<i class="fas fa-sort-up"></i>';
+        } else if (sortOrder === 'serial_desc') {
+            serialSortIcon.innerHTML = '<i class="fas fa-sort-down"></i>';
+        } else {
+            serialSortIcon.innerHTML = '<i class="fas fa-sort"></i>';
+        }
+    }
+
     function updatePaginationInfo(start, end, total) {
         document.getElementById('currentStart').textContent = start;
         document.getElementById('currentEnd').textContent = end;
         document.getElementById('totalItems').textContent = total;
     }
 
-    // Render pagination buttons
     function renderPagination() {
         pagination.innerHTML = '';
-        
-        // Previous button
         const prevButton = document.createElement('button');
         prevButton.innerHTML = '<i class="fas fa-chevron-left"></i>';
         prevButton.className = `px-2 py-1 md:px-3 md:py-2 rounded-lg text-xs md:text-sm ${currentPage === 1 ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300 hover:border-primary-300'}`;
@@ -687,7 +967,6 @@
         });
         pagination.appendChild(prevButton);
         
-        // Page buttons
         const maxVisibleButtons = window.innerWidth < 640 ? 3 : 5;
         let startPage = Math.max(1, currentPage - Math.floor(maxVisibleButtons / 2));
         let endPage = Math.min(totalPages, startPage + maxVisibleButtons - 1);
@@ -696,7 +975,6 @@
             startPage = Math.max(1, endPage - maxVisibleButtons + 1);
         }
         
-        // First page button (if needed)
         if (startPage > 1) {
             const firstButton = document.createElement('button');
             firstButton.textContent = '1';
@@ -726,7 +1004,6 @@
             pagination.appendChild(pageButton);
         }
         
-        // Last page button (if needed)
         if (endPage < totalPages) {
             if (endPage < totalPages - 1) {
                 const ellipsis = document.createElement('span');
@@ -745,7 +1022,6 @@
             pagination.appendChild(lastButton);
         }
         
-        // Next button
         const nextButton = document.createElement('button');
         nextButton.innerHTML = '<i class="fas fa-chevron-right"></i>';
         nextButton.className = `px-2 py-1 md:px-3 md:py-2 rounded-lg text-xs md:text-sm ${currentPage === totalPages ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300 hover:border-primary-300'}`;
@@ -759,7 +1035,6 @@
         pagination.appendChild(nextButton);
     }
 
-    // Edit voter
     async function editVoter(id) {
         try {
             const response = await fetch(`/api/voters/${id}/`);
@@ -772,9 +1047,10 @@
             
             if (data.success) {
                 const voter = data.voter;
+                // Format serial with leading zeros
+                const formattedSerial = voter.serial ? String(voter.serial).padStart(4, '0') : '';
                 
-                // Populate form
-                document.getElementById('serial').value = voter.serial || '';
+                document.getElementById('serial').value = formattedSerial;
                 document.getElementById('name').value = voter.name || '';
                 document.getElementById('voter_id').value = voter.voter_id || '';
                 document.getElementById('fathers_name').value = voter.fathers_name || '';
@@ -783,12 +1059,8 @@
                 document.getElementById('dob').value = voter.dob || '';
                 document.getElementById('address').value = voter.address || '';
                 document.getElementById('source_title').value = voter.source_title || '';
-                
-                // Set edit mode
                 editIdInput.value = id;
                 modalTitle.textContent = 'ভোটার পরিবর্তন করুন';
-                
-                // Show modal
                 voterModal.classList.remove('hidden');
                 
             } else {
@@ -800,13 +1072,11 @@
         }
     }
 
-    // Show delete confirmation
     function showDeleteConfirmation(id) {
         deleteIdInput.value = id;
         confirmModal.classList.remove('hidden');
     }
 
-    // Update mobile filter chips
     function updateMobileFilterChips() {
         mobileFilterChips.innerHTML = '';
         
@@ -821,7 +1091,7 @@
         filters.forEach(filter => {
             if (filter.value && filter.value.trim()) {
                 const chip = document.createElement('div');
-                chip.className = 'inline-flex items-center px-3 py-1 bg-primary-100 text-primary-800 rounded-full text-xs';
+                chip.className = 'filter-chip';
                 chip.innerHTML = `
                     ${filter.label}: ${filter.value}
                     <button type="button" onclick="removeFilter('${filter.type}')" class="ml-2 hover:text-primary-900">
@@ -835,8 +1105,6 @@
     
     function removeFilter(type) {
         currentSearch[type] = '';
-        
-        // Clear corresponding input fields
         if (type === 'search') {
             document.getElementById('quickSearch').value = '';
         }
@@ -854,44 +1122,34 @@
         loadVoters();
     }
 
-    // Helper function to reset all filters
     function resetAllFilters() {
-        // Reset desktop filters
         document.getElementById('quickSearch').value = '';
         document.getElementById('searchVoterId').value = '';
         document.getElementById('searchFather').value = '';
         document.getElementById('searchMother').value = '';
         document.getElementById('searchDob').value = '';
-        
-        // Reset state
         currentSearch = { search: '', voter_id: '', fathers_name: '', mothers_name: '', dob: '' };
         currentPage = 1;
-        
-        // Update UI
         updateMobileFilterChips();
         loadVoters();
     }
 
-    // Setup event listeners
     function setupEventListeners() {
-        // Mobile FAB button
         mobileFab.addEventListener('click', function() {
             openAddVoterModal();
         });
         
-        // Quick search (desktop and mobile) - Global search
         let quickSearchTimeout;
         document.getElementById('quickSearch').addEventListener('input', function() {
             clearTimeout(quickSearchTimeout);
             quickSearchTimeout = setTimeout(() => {
-                currentSearch.search = this.value;  // Global search
+                currentSearch.search = this.value;
                 currentPage = 1;
                 updateMobileFilterChips();
                 loadVoters();
             }, 300);
         });
         
-        // Advanced filter toggle
         advancedFilterToggle.addEventListener('click', function() {
             advancedFilters.classList.toggle('hidden');
             const icon = this.querySelector('i');
@@ -906,9 +1164,7 @@
             }
         });
         
-        // Search button (for advanced filters)
         document.getElementById('searchBtn').addEventListener('click', function() {
-            // Get advanced filter values
             currentSearch.voter_id = document.getElementById('searchVoterId').value;
             currentSearch.fathers_name = document.getElementById('searchFather').value;
             currentSearch.mothers_name = document.getElementById('searchMother').value;
@@ -919,29 +1175,24 @@
             loadVoters();
         });
         
-        // Reset button
         document.getElementById('resetBtn').addEventListener('click', function() {
             resetAllFilters();
         });
         
-        // Items per page change
         document.getElementById('itemsPerPage').addEventListener('change', function() {
             itemsPerPage = parseInt(this.value);
             currentPage = 1;
             loadVoters();
         });
         
-        // Add voter button (desktop)
         document.getElementById('addVoterBtn').addEventListener('click', function() {
             openAddVoterModal();
         });
         
-        // Empty state reset
         document.getElementById('emptyStateReset').addEventListener('click', function() {
             resetAllFilters();
         });
         
-        // Close modal buttons
         document.getElementById('closeModal').addEventListener('click', function() {
             voterModal.classList.add('hidden');
         });
@@ -950,25 +1201,26 @@
             voterModal.classList.add('hidden');
         });
         
-        // Close confirm modal buttons
         document.getElementById('cancelDeleteBtn').addEventListener('click', function() {
             confirmModal.classList.add('hidden');
         });
         
-        // Voter form submission
         voterForm.addEventListener('submit', async function(e) {
             e.preventDefault();
             
             const saveBtn = document.getElementById('saveVoterBtn');
             const originalText = saveBtn.innerHTML;
-            
-            // Show loading state
             saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>সংরক্ষণ হচ্ছে...';
             saveBtn.disabled = true;
             
             const formData = new FormData(this);
+            
+            // Remove leading zeros from serial before saving
+            const serialValue = formData.get('serial');
+            const cleanSerial = serialValue ? String(parseInt(serialValue, 10) || 0) : '';
+            
             const voterData = {
-                serial: formData.get('serial'),
+                serial: cleanSerial,
                 name: formData.get('name'),
                 voter_id: formData.get('voter_id'),
                 fathers_name: formData.get('fathers_name'),
@@ -983,13 +1235,10 @@
             
             try {
                 let url, method;
-                
                 if (editId) {
-                    // Update existing voter
                     url = `/api/voters/${editId}/update/`;
                     method = 'POST';
                 } else {
-                    // Add new voter
                     url = '/api/voters/create/';
                     method = 'POST';
                 }
@@ -1004,13 +1253,9 @@
                 });
                 
                 const data = await response.json();
-                
                 if (data.success) {
-                    // Close modal and reload
                     voterModal.classList.add('hidden');
                     loadVoters();
-                    
-                    // Show success message
                     showNotification(data.message, 'success');
                 } else {
                     showNotification(data.message || 'সংরক্ষণ ব্যর্থ হয়েছে', 'error');
@@ -1019,19 +1264,15 @@
                 console.error('Error saving voter:', error);
                 showNotification('ভোটার সংরক্ষণ করতে সমস্যা হয়েছে', 'error');
             } finally {
-                // Reset button state
                 saveBtn.innerHTML = originalText;
                 saveBtn.disabled = false;
             }
         });
         
-        // Confirm delete
         document.getElementById('confirmDeleteBtn').addEventListener('click', async function() {
             const id = deleteIdInput.value;
             const deleteBtn = this;
             const originalText = deleteBtn.innerHTML;
-            
-            // Show loading state
             deleteBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>মুছে ফেলানো হচ্ছে...';
             deleteBtn.disabled = true;
             
@@ -1045,13 +1286,9 @@
                 });
                 
                 const data = await response.json();
-                
                 if (data.success) {
-                    // Close modal and reload
                     confirmModal.classList.add('hidden');
                     loadVoters();
-                    
-                    // Show success message
                     showNotification(data.message, 'success');
                 } else {
                     showNotification(data.message || 'মুছে ফেলা ব্যর্থ হয়েছে', 'error');
@@ -1060,13 +1297,11 @@
                 console.error('Error deleting voter:', error);
                 showNotification('ভোটার মুছে ফেলতে সমস্যা হয়েছে', 'error');
             } finally {
-                // Reset button state
                 deleteBtn.innerHTML = originalText;
                 deleteBtn.disabled = false;
             }
         });
         
-        // Close modals when clicking outside
         window.addEventListener('click', function(e) {
             if (e.target === voterModal) {
                 voterModal.classList.add('hidden');
@@ -1076,7 +1311,6 @@
             }
         });
         
-        // Enable Enter key to search in all fields
         document.querySelectorAll('#quickSearch, #searchVoterId, #searchFather, #searchMother, #searchDob').forEach(input => {
             input.addEventListener('keyup', function(e) {
                 if (e.key === 'Enter') {
@@ -1098,7 +1332,6 @@
             });
         });
         
-        // Listen for escape key to close modals
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') {
                 if (!voterModal.classList.contains('hidden')) {
@@ -1109,28 +1342,23 @@
                 }
             }
         });
+        
+        // Add touch event for better mobile experience
+        document.addEventListener('touchstart', function() {}, {passive: true});
     }
 
-    // Open add voter modal
     function openAddVoterModal() {
-        // Reset form
         voterForm.reset();
         editIdInput.value = '';
         modalTitle.textContent = 'নতুন ভোটার যোগ করুন';
-        
-        // Show modal
         voterModal.classList.remove('hidden');
     }
 
-    // Show notification
     function showNotification(message, type) {
-        // Remove existing notifications
         const existingNotification = document.querySelector('.notification');
         if (existingNotification) {
             existingNotification.remove();
         }
-        
-        // Create notification
         const notification = document.createElement('div');
         notification.className = `notification fixed top-4 right-4 px-4 py-3 rounded-lg shadow-lg z-50 transform transition-all duration-300 ${
             type === 'success' ? 'bg-green-500 text-white' : 
@@ -1150,8 +1378,6 @@
         `;
         
         document.body.appendChild(notification);
-        
-        // Remove notification after 3 seconds
         setTimeout(() => {
             if (notification.parentElement) {
                 notification.style.opacity = '0';
@@ -1161,7 +1387,6 @@
         }, 3000);
     }
 
-    // Get CSRF token from cookies
     function getCookie(name) {
         let cookieValue = null;
         if (document.cookie && document.cookie !== '') {
@@ -1177,8 +1402,10 @@
         return cookieValue;
     }
 
-    // Export functions for inline onclick handlers
+    // Make functions available globally
     window.removeFilter = removeFilter;
+    window.editVoterBySerial = editVoterBySerial;
+    window.toggleSort = toggleSort;
 </script>
 </body>
 </html>

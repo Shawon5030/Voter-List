@@ -5,7 +5,7 @@ from . import views
 urlpatterns = [
     path("api/all-voters/import/", AllVoterBulkInsertAPI.as_view(), name="allvoter-import"),
     path('', views.voter_list, name='home'),\
-          path('login/', views.custom_login, name='login'),
+          path('accounts/login/', views.custom_login, name='login'),
     path('api/voters/', views.get_voters, name='get_voters'),
     path('api/voters/create/', views.create_voter, name='create_voter'),
     path('api/voters/<int:voter_id>/update/', views.update_voter, name='update_voter'),
