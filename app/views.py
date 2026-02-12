@@ -47,115 +47,110 @@ class AllVoterBulkInsertAPI(APIView):
             status=status.HTTP_201_CREATED
         )
         
-        
-        
-     # views.py
-from django.shortcuts import render, get_object_or_404
-from django.http import JsonResponse
-from django.core.paginator import Paginator
-from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.http import require_POST, require_GET
-from django.db.models import Q
 import json
+import re
+from django.http import JsonResponse
+from django.db.models import Q
+from django.core.paginator import Paginator
+from django.views.decorators.http import require_GET, require_POST
+from django.views.decorators.csrf import csrf_exempt
+from django.shortcuts import get_object_or_404, render, redirect
+from django.contrib.auth import authenticate, login
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
 from .models import AllVoter
 
-from django.contrib.auth.decorators import login_required
+# --- সহায়ক ফাংশন (Helper Function) ---
+def clean_search_term(term):
+    """সার্চ টার্ম থেকে ডট (.) এবং বাড়তি স্পেস রিমুভ করে সার্চ সহজ করে"""
+    if not term:
+        return ""
+    # ডট এবং স্পেস রিমুভ করা হচ্ছে যাতে 'মোঃ মুনির' এবং 'মুনির' একই রেজাল্ট দেয়
+    return re.sub(r'[\.\s]', '', term)
 
+# --- টেমপ্লেট ভিউ ---
 @login_required
 def voter_list(request):
+    """ভোট ব্যবস্থাপনার মূল পেজ লোড করবে"""
     return render(request, 'voters/voter_management.html')
 
-
+# --- API এন্ডপয়েন্টস ---
 
 @require_GET
 def get_voters(request):
-    """API endpoint to get paginated and filtered voters"""
-    # Get search parameters - UPDATED TO MATCH JAVASCRIPT
-    search_global = request.GET.get('search', '').strip()  # Global search
+    """সঠিক সর্টিং এবং উন্নত ফিল্টারিং সহ ভোটার লিস্ট রিটার্ন করবে"""
+    # সার্চ প্যারামিটার গ্রহণ
+    search_global = request.GET.get('search', '').strip()
     search_voter_id = request.GET.get('voter_id', '').strip()
-    search_fathers_name = request.GET.get('fathers_name', '').strip()  # Changed from parents
-    search_mothers_name = request.GET.get('mothers_name', '').strip()  # Changed from parents
+    search_fathers_name = request.GET.get('fathers_name', '').strip()
+    search_mothers_name = request.GET.get('mothers_name', '').strip()
     search_dob = request.GET.get('dob', '').strip()
     
-    # Get sorting parameter
+    # সর্টিং প্যারামিটার (ডিফল্ট: সিরিয়াল অনুযায়ী ছোট থেকে বড়)
     sort_by = request.GET.get('sort', 'serial_asc')
     
-    # Start with all voters
     voters = AllVoter.objects.all()
     
-    # Apply filters
+    # ১. উন্নত গ্লোবাল সার্চ লজিক
     if search_global:
-        # Global search across all fields
+        cleaned_term = clean_search_term(search_global)
         voters = voters.filter(
             Q(name__icontains=search_global) |
+            Q(name__icontains=cleaned_term) | # ডট/স্পেস ছাড়া সার্চ
             Q(voter_id__icontains=search_global) |
             Q(fathers_name__icontains=search_global) |
             Q(mothers_name__icontains=search_global) |
-            Q(address__icontains=search_global) |
-            Q(dob__icontains=search_global) |
-            Q(occupation__icontains=search_global) |
-            Q(source_title__icontains=search_global)
-        )
-    else:
-        # Individual field filters (for advanced search)
-        if search_voter_id:
-            voters = voters.filter(voter_id__icontains=search_voter_id)
-        
-        if search_fathers_name:
-            voters = voters.filter(fathers_name__icontains=search_fathers_name)
-        
-        if search_mothers_name:
-            voters = voters.filter(mothers_name__icontains=search_mothers_name)
-        
-        if search_dob:
-            voters = voters.filter(dob__icontains=search_dob)
-    
-    # Apply sorting - IMPORTANT: Add this section
+            Q(address__icontains=search_global)
+        ).distinct()
+
+    # ২. আলাদা ফিল্ড ফিল্টার (Advanced Filter)
+    if search_voter_id:
+        voters = voters.filter(voter_id__icontains=search_voter_id)
+    if search_fathers_name:
+        voters = voters.filter(fathers_name__icontains=search_fathers_name)
+    if search_mothers_name:
+        voters = voters.filter(mothers_name__icontains=search_mothers_name)
+    if search_dob:
+        voters = voters.filter(dob__icontains=search_dob)
+
+    # ৩. সর্টিং হ্যান্ডলিং (সিরিয়াল ০0০১, ০0১৬ এর অর্ডার ঠিক রাখা)
     if sort_by == 'serial_asc':
         voters = voters.order_by('serial')
     elif sort_by == 'serial_desc':
         voters = voters.order_by('-serial')
-    # Add more sorting options if needed
     elif sort_by == 'name_asc':
         voters = voters.order_by('name')
     elif sort_by == 'name_desc':
         voters = voters.order_by('-name')
-    elif sort_by == 'voter_id_asc':
-        voters = voters.order_by('voter_id')
-    elif sort_by == 'voter_id_desc':
-        voters = voters.order_by('-voter_id')
     else:
-        # Default sorting by serial ascending
+        # ডিফল্টভাবে সিরিয়াল অনুযায়ী ছোট থেকে বড় সাজানো
         voters = voters.order_by('serial')
-    
-    # Get pagination parameters
+
+    # ৪. পেজিনেশন
     page = int(request.GET.get('page', 1))
     per_page = int(request.GET.get('per_page', 25))
-    
-    # Create paginator
     paginator = Paginator(voters, per_page)
     
     try:
         voters_page = paginator.page(page)
     except:
         voters_page = paginator.page(1)
-    
-    # Serialize voters
+
+    # ডাটা ফরম্যাটিং
     voters_data = []
     for voter in voters_page:
         voters_data.append({
             'id': voter.id,
-            'serial': voter.serial,
+            # ডাটাবেজে ইন্টিজার থাকলেও ডিসপ্লেতে ৪ ডিজিট (যেমন: 0001) দেখাবে
+            'serial': str(voter.serial).zfill(4), 
             'name': voter.name,
             'voter_id': voter.voter_id,
             'fathers_name': voter.fathers_name,
             'mothers_name': voter.mothers_name,
-            'occupation': voter.occupation if voter.occupation else '',
-            'dob': voter.dob if voter.dob else '',
+            'occupation': voter.occupation or '',
+            'dob': voter.dob or '',
             'address': voter.address,
-            'source_title': voter.source_title if voter.source_title else '',
-            'created_at': voter.created_at.strftime('%Y-%m-%d %H:%M'),
-            'updated_at': voter.updated_at.strftime('%Y-%m-%d %H:%M')
+            'source_title': voter.source_title or '',
         })
     
     return JsonResponse({
@@ -164,176 +159,104 @@ def get_voters(request):
         'page': page,
         'per_page': per_page,
         'total_pages': paginator.num_pages,
-        'sort_order': sort_by  # Optional: send back the sort order
+        'sort_order': sort_by
     })
-    
+
+@require_GET
+def get_voter_detail(request, voter_id):
+    """নির্দিষ্ট ভোটারের বিস্তারিত তথ্য রিটার্ন করবে"""
+    voter = get_object_or_404(AllVoter, id=voter_id)
+    return JsonResponse({
+        'success': True,
+        'voter': {
+            'id': voter.id,
+            'serial': str(voter.serial).zfill(4),
+            'name': voter.name,
+            'voter_id': voter.voter_id,
+            'fathers_name': voter.fathers_name,
+            'mothers_name': voter.mothers_name,
+            'occupation': voter.occupation or '',
+            'dob': voter.dob or '',
+            'address': voter.address,
+            'source_title': voter.source_title or ''
+        }
+    })
+
 @csrf_exempt
 @require_POST
 def create_voter(request):
-    """API endpoint to create a new voter"""
+    """নতুন ভোটার রেকর্ড তৈরি"""
     try:
         data = json.loads(request.body)
-        
-        # Handle serial conversion to integer
-        serial_value = data['serial']
-        # Remove any non-numeric characters and convert to integer
-        if isinstance(serial_value, str):
-            # Extract numbers from string
-            import re
-            numbers = re.findall(r'\d+', serial_value)
-            if numbers:
-                serial_value = int(numbers[0])
-            else:
-                serial_value = 0
-        elif isinstance(serial_value, (int, float)):
-            serial_value = int(serial_value)
-        else:
-            serial_value = 0
+        serial_val = data.get('serial', '0')
+        # বাংলা বা ইংলিশ ইনপুট যাই হোক, শুধু সংখ্যা ফিল্টার করে ইন্টিজার বানানো হচ্ছে
+        clean_serial = int(re.sub(r'\D', '', str(serial_val))) if str(serial_val) else 0
         
         voter = AllVoter.objects.create(
-            serial=serial_value,
+            serial=clean_serial,
             name=data['name'],
             voter_id=data['voter_id'],
             fathers_name=data['fathers_name'],
             mothers_name=data['mothers_name'],
-            occupation=data.get('occupation', ''),
-            dob=data.get('dob', ''),
             address=data['address'],
+            dob=data.get('dob', ''),
             source_title=data.get('source_title', '')
         )
-        
-        return JsonResponse({
-            'success': True,
-            'message': 'ভোটার সফলভাবে যোগ করা হয়েছে',
-            'voter_id': voter.id
-        })
+        return JsonResponse({'success': True, 'message': 'ভোটার সফলভাবে যোগ করা হয়েছে'})
     except Exception as e:
-        return JsonResponse({
-            'success': False,
-            'message': f'ত্রুটি: {str(e)}'
-        }, status=400)
+        return JsonResponse({'success': False, 'message': str(e)}, status=400)
 
 @csrf_exempt
 @require_POST
 def update_voter(request, voter_id):
-    """API endpoint to update an existing voter"""
+    """বিদ্যমান ভোটার রেকর্ড আপডেট"""
     try:
         voter = get_object_or_404(AllVoter, id=voter_id)
         data = json.loads(request.body)
         
-        # Handle serial conversion to integer (same as create)
-        serial_value = data['serial']
-        if isinstance(serial_value, str):
-            import re
-            numbers = re.findall(r'\d+', serial_value)
-            if numbers:
-                serial_value = int(numbers[0])
-            else:
-                serial_value = 0
-        elif isinstance(serial_value, (int, float)):
-            serial_value = int(serial_value)
-        else:
-            serial_value = 0
-        
-        voter.serial = serial_value
+        serial_val = data.get('serial', voter.serial)
+        voter.serial = int(re.sub(r'\D', '', str(serial_val)))
         voter.name = data['name']
         voter.voter_id = data['voter_id']
         voter.fathers_name = data['fathers_name']
         voter.mothers_name = data['mothers_name']
-        voter.occupation = data.get('occupation', '')
-        voter.dob = data.get('dob', '')
         voter.address = data['address']
-        voter.source_title = data.get('source_title', '')
         voter.save()
         
-        return JsonResponse({
-            'success': True,
-            'message': 'ভোটার সফলভাবে আপডেট করা হয়েছে'
-        })
+        return JsonResponse({'success': True, 'message': 'আপডেট সফল হয়েছে'})
     except Exception as e:
-        return JsonResponse({
-            'success': False,
-            'message': f'ত্রুটি: {str(e)}'
-        }, status=400)
+        return JsonResponse({'success': False, 'message': str(e)}, status=400)
 
 @csrf_exempt
 @require_POST
 def delete_voter(request, voter_id):
-    """API endpoint to delete a voter"""
-    try:
-        voter = get_object_or_404(AllVoter, id=voter_id)
-        voter.delete()
-        
-        return JsonResponse({
-            'success': True,
-            'message': 'ভোটার সফলভাবে মুছে ফেলা হয়েছে'
-        })
-    except Exception as e:
-        return JsonResponse({
-            'success': False,
-            'message': f'ত্রুটি: {str(e)}'
-        }, status=400)
-
-@require_GET
-def get_voter_detail(request, voter_id):
-    """API endpoint to get details of a specific voter"""
-    try:
-        voter = get_object_or_404(AllVoter, id=voter_id)
-        
-        return JsonResponse({
-            'success': True,
-            'voter': {
-                'id': voter.id,
-                'serial': voter.serial,
-                'name': voter.name,
-                'voter_id': voter.voter_id,
-                'fathers_name': voter.fathers_name,
-                'mothers_name': voter.mothers_name,
-                'occupation': voter.occupation if voter.occupation else '',
-                'dob': voter.dob if voter.dob else '',
-                'address': voter.address,
-                'source_title': voter.source_title if voter.source_title else ''
-            }
-        })
-    except Exception as e:
-        return JsonResponse({
-            'success': False,
-            'message': f'ত্রুটি: {str(e)}'
-        }, status=404)
-        
-        
-        
-
-
+    """ভোটার রেকর্ড মুছে ফেলা"""
+    voter = get_object_or_404(AllVoter, id=voter_id)
+    voter.delete()
+    return JsonResponse({'success': True, 'message': 'সফলভাবে মুছে ফেলা হয়েছে'})
 
 def custom_login(request):
+    """ইউজারনাম অথবা ইমেইল দিয়ে লগইন লজিক"""
     if request.user.is_authenticated:
-        return redirect('login')
+        return redirect('home')
     
     if request.method == 'POST':
-        # Get username/email from form
-        username_or_email = request.POST.get('username')
-        password = request.POST.get('password')
+        u_name = request.POST.get('username')
+        pwd = request.POST.get('password')
         
-        # Try to authenticate with username first
-        user = authenticate(request, username=username_or_email, password=password)
-        
-        # If authentication fails, try with email
+        user = authenticate(request, username=u_name, password=pwd)
         if user is None:
             try:
                 from django.contrib.auth.models import User
-                user_obj = User.objects.get(email=username_or_email)
-                user = authenticate(request, username=user_obj.username, password=password)
+                user_obj = User.objects.get(email=u_name)
+                user = authenticate(request, username=user_obj.username, password=pwd)
             except User.DoesNotExist:
                 user = None
         
-        if user is not None:
+        if user:
             login(request, user)
-            next_url = request.GET.get('next', 'home')
-            return redirect(next_url)
+            return redirect(request.GET.get('next', 'home'))
         else:
-            messages.error(request, 'Invalid username/email or password.')
-    
+            messages.error(request, 'ইউজারনাম বা পাসওয়ার্ড ভুল।')
+            
     return render(request, 'login.html')
-
-
